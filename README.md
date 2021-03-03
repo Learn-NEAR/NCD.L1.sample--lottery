@@ -1,0 +1,1 @@
+# starterkit--AssemblyScript-contracts
