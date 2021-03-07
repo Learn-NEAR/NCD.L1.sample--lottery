@@ -2,7 +2,7 @@
 
 This repository includes a complete project structure for AssemblyScript contracts targeting the NEAR platform.
 
-The example here is playful, it's a toy, involving a lottery.
+The example here is playful.  It's a toy involving a lottery.
 
 The goal of this repository is to make it as easy as possible to get started writing unit and simulation tests for AssemblyScript contracts built to work with NEAR Protocol.
 
@@ -28,7 +28,7 @@ The goal of this repository is to make it as easy as possible to get started wri
 
 - **Lottery** contract and test documentation
   - see `/src/lottery/README` for Lottery interface
-  - see `/src/lotter/__tests__/README` for Lottery unit testing details
+  - see `/src/lottery/__tests__/README` for Lottery unit testing details
 
 - simulation tests
   - see `/simulation/README` for simulation testing
@@ -46,6 +46,7 @@ src
 │   ├── README.md
 │   ├── __tests__
 │   │   ├── README.md
+│   │   ├── fee-strategies.unit.spec.ts
 │   │   └── index.unit.spec.ts
 │   └── assembly
 │       ├── index.ts

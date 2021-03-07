@@ -1,16 +1,20 @@
-import { logging, PersistentSet, Context, env, u128, ContractPromiseBatch } from "near-sdk-as";
-import { ONE_NEAR, asNEAR } from "../../utils";
+import { logging, PersistentSet, Context, u128, ContractPromiseBatch, RNG } from "near-sdk-as";
+import { ONE_NEAR, asNEAR, XCC_GAS } from "../../utils";
+import { Strategy, StrategyType } from "./fee-strategies";
 
 type AccountId = string;
 
 @nearBindgen
 export class Contract {
 
-  private players: PersistentSet<AccountId> = new PersistentSet("p");
   private _owner: AccountId
-  private _winner: AccountId
-  private _pot: u128
-  private last_played: AccountId = "NULL";
+  private players: PersistentSet<AccountId> = new PersistentSet("p");
+  private _pot: u128 = ONE_NEAR
+  private _active: bool = true
+  private _winner: AccountId = ""
+  private last_played: AccountId = "";
+  private fee_strategy: StrategyType = StrategyType.exponential
+
   constructor(owner: AccountId) {
     this._owner = owner;
   };
@@ -27,8 +31,12 @@ export class Contract {
     return this._winner;
   }
 
-  pot(): u128 {
-    return this._pot;
+  pot(): string {
+    return asNEAR(this._pot) + " NEAR";
+  }
+
+  feeStrategy(): StrategyType {
+    return this.fee_strategy
   }
 
   hasPlayed(player: AccountId): bool {
@@ -36,11 +44,11 @@ export class Contract {
   }
 
   lastPlayed(): AccountId {
-    return this.last_played || "";
+    return this.last_played;
   }
 
-  reset(): void {
-    this.players.clear()
+  active(): bool {
+    return this._active
   }
 
   // --------------------------------------------------------------------------
@@ -57,26 +65,52 @@ export class Contract {
    */
   @mutateState()
   play(): void {
+    assert(this._active, this._winner + " won " + this.pot() + ". Please reset the game.")
     const sender = Context.sender
 
-    if (!this.players.has(sender)) {
-      this.players.add(sender);
-      if (this.won()) {
-        this._winner = sender
-        this.payout()
-      }
-    } else {
+    // if you've played before then you have to pay extra
+    if (this.players.has(sender)) {
       const fee = this.fee()
       assert(Context.attachedDeposit >= fee, this.generate_fee_message(fee));
-
       this.increasePot()
 
-      if (this.won()) {
-        this._winner = sender
-        this.payout()
-      }
+      // if it's your first time then you may win for the price of gas
+    } else {
+      this.players.add(sender);
     }
+
     this.last_played = sender;
+
+    if (this.won()) {
+      this._winner = sender
+      this.payout()
+    } else {
+      this.loser()
+    }
+  }
+
+  @mutateState()
+  setFeeStrategy(strategy: StrategyType): bool {
+    assert(Context.predecessor == Context.contractName, "Only this contract may call itself")
+    this.fee_strategy = strategy
+    return true
+  }
+
+  @mutateState()
+  on_payout_complete(): void {
+    assert(Context.predecessor == Context.contractName, "Only this contract may call itself")
+    this._active = false
+    logging.log("game over.")
+  }
+
+  @mutateState()
+  reset(): void {
+    assert(Context.predecessor == Context.contractName, "Only this contract may call itself")
+    this.players.clear()
+    this._winner = ""
+    this.last_played = ""
+    this._pot = ONE_NEAR
+    this._active = true
   }
 
   // --------------------------------------------------------------------------
@@ -84,8 +118,7 @@ export class Contract {
   // --------------------------------------------------------------------------
 
   private fee(): u128 {
-    const num_players = u128.from(this.players.size);
-    return u128.mul(ONE_NEAR, u128.mul(num_players, num_players));
+    return Strategy.selector(this.fee_strategy, this.players.size, ONE_NEAR)
   }
 
   private increasePot(): void {
@@ -93,16 +126,22 @@ export class Contract {
   }
 
   private won(): bool {
-    const result: u8 = 0;
-    env.random_seed(0)
-    env.read_register(0, result)
-    logging.log(result);
-    return true;
+    const rng = new RNG<u8>(1, 100)
+    return rng.next() <= 20; // 1 in 5 chance
+  }
+
+  private loser(): void {
+    logging.log(this.last_played + " did not win.  The pot is currently " + this.pot())
   }
 
   private payout(): void {
+    logging.log(this._winner + " won " + this.pot() + "!");
+
     if (this._winner.length > 0) {
-      ContractPromiseBatch.create(this._winner).transfer(this._pot);
+      // transfer payout to winner
+      const promise = ContractPromiseBatch.create(this._winner).transfer(this._pot);
+      // set game to inactive
+      promise.then(Context.contractName).function_call("on_payout_complete", '{}', u128.Zero, XCC_GAS)
     }
   }
 
