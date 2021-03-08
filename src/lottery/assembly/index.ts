@@ -142,7 +142,7 @@ export class Contract {
       // transfer payout to winner
       const promise = ContractPromiseBatch.create(this.winner).transfer(this.pot);
       // set game to inactive
-      promise.then(Context.contractName).function_call("on_payout_complete", '{}', u128.Zero, XCC_GAS);
+      promise.then(Context.contractName).function_call("on_payout_complete", "{}", u128.Zero, XCC_GAS);
     }
   }
 

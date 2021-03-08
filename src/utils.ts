@@ -1,19 +1,5 @@
-import { u128 } from 'near-sdk-as';
+import { u128 } from "near-sdk-as";
 
-/**
- * == CONSTANTS ================================================================
- *
- * ONE_NEAR = unit of NEAR token in yocto Ⓝ (1e24)
- * XCC_GAS = gas for cross-contract calls, ~5 Tgas (teragas = 1e12) per "hop"
- * MIN_ACCOUNT_BALANCE = 3 NEAR min to keep account alive via storage staking
- *
- * TODO: revist MIN_ACCOUNT_BALANCE after some real data is included b/c this
- *  could end up being much higher
- */
-
-export const ONE_NEAR = u128.from('1000000000000000000000000');
-export const XCC_GAS = 20000000000000;
-export const MIN_ACCOUNT_BALANCE = u128.mul(ONE_NEAR, u128.from(3));
 
 /**
  * == TYPES ====================================================================
@@ -24,6 +10,11 @@ export const MIN_ACCOUNT_BALANCE = u128.mul(ONE_NEAR, u128.from(3));
  */
 export type AccountId = string;
 
+/**
+ * Gas is u64
+ */
+
+ export type Gas = u64;
 /**
  * Amounts, Balances, and Money in NEAR is are u128.
  */
@@ -39,6 +30,22 @@ export type Money = Amount;
  * Timestamp in NEAR is a number.
  */
 export type Timestamp = u64;
+
+
+/**
+ * == CONSTANTS ================================================================
+ *
+ * ONE_NEAR = unit of NEAR token in yocto Ⓝ (1e24)
+ * XCC_GAS = gas for cross-contract calls, ~5 Tgas (teragas = 1e12) per "hop"
+ * MIN_ACCOUNT_BALANCE = 3 NEAR min to keep account alive via storage staking
+ *
+ * TODO: revist MIN_ACCOUNT_BALANCE after some real data is included b/c this
+ *  could end up being much higher
+ */
+
+export const ONE_NEAR:u128 = u128.from(1_000_000_000_000_000_000_000_000);
+export const XCC_GAS:Gas = 20_000_000_000_000;
+export const MIN_ACCOUNT_BALANCE: u128 = u128.mul(ONE_NEAR, u128.from(3));
 
 /**
  * == FUNCTIONS ================================================================
