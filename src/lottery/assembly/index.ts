@@ -13,7 +13,7 @@ export class Contract {
   private active: bool = true;
   private winner: AccountId;
   private last_played: AccountId;
-  private fee_strategy: StrategyType = StrategyType.Exponential;
+  private fee_strategy: Strategy = <Strategy>{strategy: StrategyType.Constant};
 
   constructor(owner: AccountId) {
     this.owner = owner;
@@ -35,7 +35,7 @@ export class Contract {
     return asNEAR(this.pot) + " NEAR";
   }
 
-  get_fee_strategy(): StrategyType {
+  get_fee_strategy(): Strategy {
     return this.fee_strategy
   }
 
@@ -90,10 +90,10 @@ export class Contract {
   }
 
   @mutateState()
-  setFeeStrategy(strategy: StrategyType): bool {
+  set_fee_strategy(strategy: StrategyType): bool {
     this.assert_self();
 
-    this.fee_strategy = strategy;
+    this.fee_strategy = <Strategy>{strategy};
     return true;
   }
 
@@ -119,7 +119,7 @@ export class Contract {
   // --------------------------------------------------------------------------
 
   private fee(): u128 {
-    return Strategy.selector(this.fee_strategy, this.players.size, ONE_NEAR);
+    return this.fee_strategy.calculate_fee(this.players.size, ONE_NEAR);
   }
 
   private increase_pot(): void {
@@ -132,7 +132,7 @@ export class Contract {
   }
 
   private loser(): void {
-    logging.log(this.last_played + " did not win.  The pot is currently " + this.pot.toString();
+    logging.log(this.last_played + " did not win.  The pot is currently " + this.pot.toString());
   }
 
   private payout(): void {
