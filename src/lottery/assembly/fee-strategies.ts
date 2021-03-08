@@ -26,15 +26,15 @@ export class Strategy {
   }
 
   static constant(scalar: u32, base: u128): u128 {
-    return base;
+    return base; // b
   }
 
   static linear(scalar: u32, base: u128): u128 {
-    return u128.mul(base, u128.from(scalar));
+    return u128.mul(base, u128.from(scalar)); // b x
   }
 
-  static exponential(scalar: u32, base: u128): u128 {
+  static exponential(scalar: u32, base: u128): u128 { 
     const scalar_as_u128 = u128.from(scalar);
-    return u128.mul(base, u128.mul(scalar_as_u128, scalar_as_u128));
+    return u128.mul(base, u128.pow(scalar_as_u128, 2)); // b x^2
   }
 }

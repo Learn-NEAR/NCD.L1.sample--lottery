@@ -1,4 +1,4 @@
-import { logging, Context, u128, ContractPromiseBatch, RNG } from "near-sdk-as";
+import { logging, Context, u128, ContractPromiseBatch, RNG, PersistentSet as Set } from "near-sdk-as";
 import { ONE_NEAR, asNEAR, XCC_GAS } from "../../utils";
 import { Strategy, StrategyType } from "./fee-strategies";
 
@@ -8,7 +8,7 @@ type AccountId = string;
 export class Contract {
 
   private owner: AccountId;
-  private players: Set<AccountId> = new Set();
+  private players: Set<AccountId> = new Set("p");
   private pot: u128 = ONE_NEAR;
   private active: bool = true;
   private winner: AccountId;
@@ -85,14 +85,13 @@ export class Contract {
       this.winner = sender;
       this.payout();
     } else {
-      this.loser();
+      this.lose();
     }
   }
 
   @mutateState()
   setFeeStrategy(strategy: StrategyType): bool {
     this.assert_self();
-
     this.fee_strategy = strategy;
     return true;
   }
@@ -131,8 +130,8 @@ export class Contract {
     return rng.next() <= 20; // 1 in 5 chance
   }
 
-  private loser(): void {
-    logging.log(this.last_played + " did not win.  The pot is currently " + this.pot.toString();
+  private lose(): void {
+    logging.log(this.last_played + " did not win.  The pot is currently " + this.pot.toString());
   }
 
   private payout(): void {
