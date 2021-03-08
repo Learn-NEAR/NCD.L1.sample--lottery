@@ -1,6 +1,6 @@
 import { logging, Context, u128, ContractPromiseBatch, RNG } from "near-sdk-as";
 import { ONE_NEAR, asNEAR, XCC_GAS } from "../../utils";
-import { Strategy, StrategyType } from "./fee-strategies";
+import { FeeStrategy, StrategyType } from "./fee-strategies";
 
 type AccountId = string;
 
@@ -13,7 +13,7 @@ export class Contract {
   private active: bool = true;
   private winner: AccountId;
   private last_played: AccountId;
-  private fee_strategy: Strategy = <Strategy>{strategy: StrategyType.Constant};
+  private fee_strategy: FeeStrategy = <FeeStrategy>{strategy: StrategyType.Constant};
 
   constructor(owner: AccountId) {
     this.owner = owner;
@@ -35,7 +35,7 @@ export class Contract {
     return asNEAR(this.pot) + " NEAR";
   }
 
-  get_fee_strategy(): Strategy {
+  get_fee_strategy(): FeeStrategy {
     return this.fee_strategy
   }
 
@@ -93,7 +93,7 @@ export class Contract {
   set_fee_strategy(strategy: StrategyType): bool {
     this.assert_self();
 
-    this.fee_strategy = <Strategy>{strategy};
+    this.fee_strategy = <FeeStrategy>{strategy};
     return true;
   }
 

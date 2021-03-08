@@ -6,18 +6,20 @@ export enum StrategyType {
   Exponential,
 }
 
-export class Strategy {
+@nearBindgen
+export class FeeStrategy {
 
-  calculate_fee(strategy: StrategyType, scalar: u32, base: u128): u128 {
+  strategy: StrategyType;
+
+  calculate_fee(scalar: u32, base: u128): u128 {
     let fee: u128 = u128.Zero;
-    switch (strategy) {
+    switch (this.strategy) {
       case StrategyType.Exponential:
-        fee = this.exponential(scalar, base);
+        fee = this.calculate_exponential(scalar, base);
       case StrategyType.Linear:
-        fee = this.linear(scalar, base);
-
+        fee = this.calculate_linear(scalar, base);
       case StrategyType.Constant:
-        fee = this.constant(scalar, base);
+        fee = this.calculate_constant(scalar, base);
       default:
         logging.log("Unexpected StrategyType encountered");
         env.panic();
