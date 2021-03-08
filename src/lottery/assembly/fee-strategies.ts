@@ -11,26 +11,26 @@ export class Strategy {
   static selector(strategy: StrategyType, scalar: u32, base: u128): u128 {
     switch (strategy) {
       case StrategyType.exponential:
-        return this.exponential(scalar, base)
+        return this.exponential(scalar, base);
 
       case StrategyType.linear:
-        return this.linear(scalar, base)
+        return this.linear(scalar, base);
 
       case StrategyType.constant:
-        return this.constant(scalar, base)
+        return this.constant(scalar, base);
 
       default:
         assert(false, "Must provide a valid fee strategy")
-        return u128.Zero
+        return u128.Zero;
     }
   }
 
   static constant(scalar: u32, base: u128): u128 {
-    return base
+    return base;
   }
 
   static linear(scalar: u32, base: u128): u128 {
-    return u128.mul(base, u128.from(scalar))
+    return u128.mul(base, u128.from(scalar));
   }
 
   static exponential(scalar: u32, base: u128): u128 {
