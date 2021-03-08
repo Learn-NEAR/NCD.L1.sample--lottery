@@ -13,7 +13,7 @@ export class Contract {
   private active: bool = true;
   private winner: AccountId;
   private last_played: AccountId;
-  private fee_strategy: StrategyType = StrategyType.exponential;
+  private fee_strategy: StrategyType = StrategyType.Exponential;
 
   constructor(owner: AccountId) {
     this.owner = owner;

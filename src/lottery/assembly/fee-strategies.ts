@@ -1,26 +1,26 @@
 import { u128 } from "near-sdk-as";
 
 export enum StrategyType {
-  constant,
-  linear,
-  exponential,
+  Constant,
+  Linear,
+  Exponential,
 }
 
 export class Strategy {
 
   static selector(strategy: StrategyType, scalar: u32, base: u128): u128 {
     switch (strategy) {
-      case StrategyType.exponential:
+      case StrategyType.Exponential:
         return this.exponential(scalar, base);
 
-      case StrategyType.linear:
+      case StrategyType.Linear:
         return this.linear(scalar, base);
 
-      case StrategyType.constant:
+      case StrategyType.Constant:
         return this.constant(scalar, base);
 
       default:
-        assert(false, "Must provide a valid fee strategy")
+        assert(false, "Must provide a valid fee strategy");
         return u128.Zero;
     }
   }
