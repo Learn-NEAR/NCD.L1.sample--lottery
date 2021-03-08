@@ -1,4 +1,4 @@
-import { logging, PersistentSet, Context, u128, ContractPromiseBatch, RNG } from "near-sdk-as";
+import { logging, Context, u128, ContractPromiseBatch, RNG } from "near-sdk-as";
 import { ONE_NEAR, asNEAR, XCC_GAS } from "../../utils";
 import { Strategy, StrategyType } from "./fee-strategies";
 
@@ -7,48 +7,48 @@ type AccountId = string;
 @nearBindgen
 export class Contract {
 
-  private _owner: AccountId
-  private players: PersistentSet<AccountId> = new PersistentSet("p");
-  private _pot: u128 = ONE_NEAR
-  private _active: bool = true
-  private _winner: AccountId = ""
-  private last_played: AccountId = "";
-  private fee_strategy: StrategyType = StrategyType.exponential
+  private owner: AccountId;
+  private players: Set<AccountId> = new Set();
+  private pot: u128 = ONE_NEAR;
+  private active: bool = true;
+  private winner: AccountId;
+  private last_played: AccountId;
+  private fee_strategy: StrategyType = StrategyType.Exponential;
 
   constructor(owner: AccountId) {
-    this._owner = owner;
+    this.owner = owner;
   };
 
   // --------------------------------------------------------------------------
   // Public VIEW methods
   // --------------------------------------------------------------------------
 
-  owner(): AccountId {
-    return this._owner;
+  get_owner(): AccountId {
+    return this.owner;
   }
 
-  winner(): AccountId {
-    return this._winner;
+  get_winner(): AccountId {
+    return this.winner;
   }
 
-  pot(): string {
-    return asNEAR(this._pot) + " NEAR";
+  get_pot(): string {
+    return asNEAR(this.pot) + " NEAR";
   }
 
-  feeStrategy(): StrategyType {
+  get_fee_strategy(): StrategyType {
     return this.fee_strategy
   }
 
-  hasPlayed(player: AccountId): bool {
+  get_has_played(player: AccountId): bool {
     return this.players.has(player);
   }
 
-  lastPlayed(): AccountId {
+  get_last_played(): AccountId {
     return this.last_played;
   }
 
-  active(): bool {
-    return this._active
+  get_active(): bool {
+    return this.active;
   }
 
   // --------------------------------------------------------------------------
@@ -65,14 +65,14 @@ export class Contract {
    */
   @mutateState()
   play(): void {
-    assert(this._active, this._winner + " won " + this.pot() + ". Please reset the game.")
-    const sender = Context.sender
+    assert(this.active, this.winner + " won " + this.pot.toString() + ". Please reset the game.");
+    const sender = Context.sender;
 
     // if you've played before then you have to pay extra
     if (this.players.has(sender)) {
-      const fee = this.fee()
+      const fee = this.fee();
       assert(Context.attachedDeposit >= fee, this.generate_fee_message(fee));
-      this.increasePot()
+      this.increase_pot();
 
       // if it's your first time then you may win for the price of gas
     } else {
@@ -82,35 +82,36 @@ export class Contract {
     this.last_played = sender;
 
     if (this.won()) {
-      this._winner = sender
-      this.payout()
+      this.winner = sender;
+      this.payout();
     } else {
-      this.loser()
+      this.loser();
     }
   }
 
   @mutateState()
   setFeeStrategy(strategy: StrategyType): bool {
-    assert(Context.predecessor == Context.contractName, "Only this contract may call itself")
-    this.fee_strategy = strategy
-    return true
+    this.assert_self();
+
+    this.fee_strategy = strategy;
+    return true;
   }
 
   @mutateState()
   on_payout_complete(): void {
-    assert(Context.predecessor == Context.contractName, "Only this contract may call itself")
-    this._active = false
-    logging.log("game over.")
+    this.assert_self();
+    this.active = false;
+    logging.log("game over.");
   }
 
   @mutateState()
   reset(): void {
-    assert(Context.predecessor == Context.contractName, "Only this contract may call itself")
-    this.players.clear()
-    this._winner = ""
-    this.last_played = ""
-    this._pot = ONE_NEAR
-    this._active = true
+    this.assert_self();
+    this.players.clear();
+    this.winner = "";
+    this.last_played = "";
+    this.pot = ONE_NEAR;
+    this.active = true;
   }
 
   // --------------------------------------------------------------------------
@@ -118,36 +119,40 @@ export class Contract {
   // --------------------------------------------------------------------------
 
   private fee(): u128 {
-    return Strategy.selector(this.fee_strategy, this.players.size, ONE_NEAR)
+    return Strategy.selector(this.fee_strategy, this.players.size, ONE_NEAR);
   }
 
-  private increasePot(): void {
-    this._pot = u128.add(this._pot, Context.attachedDeposit);
+  private increase_pot(): void {
+    this.pot = u128.add(this.pot, Context.attachedDeposit);
   }
 
   private won(): bool {
-    const rng = new RNG<u8>(1, 100)
+    const rng = new RNG<u8>(1, 100);
     return rng.next() <= 20; // 1 in 5 chance
   }
 
   private loser(): void {
-    logging.log(this.last_played + " did not win.  The pot is currently " + this.pot())
+    logging.log(this.last_played + " did not win.  The pot is currently " + this.pot.toString();
   }
 
   private payout(): void {
-    logging.log(this._winner + " won " + this.pot() + "!");
+    logging.log(this.winner + " won " + this.pot.toString() + "!");
 
-    if (this._winner.length > 0) {
+    if (this.winner.length > 0) {
       // transfer payout to winner
-      const promise = ContractPromiseBatch.create(this._winner).transfer(this._pot);
+      const promise = ContractPromiseBatch.create(this.winner).transfer(this.pot);
       // set game to inactive
-      promise.then(Context.contractName).function_call("on_payout_complete", '{}', u128.Zero, XCC_GAS)
+      promise.then(Context.contractName).function_call("on_payout_complete", '{}', u128.Zero, XCC_GAS);
     }
   }
 
   private generate_fee_message(fee: u128): string {
     return ("There are " + this.players.size.toString()
       + " players. Playing more than once now costs " + asNEAR(fee)
-      + " NEAR")
+      + " NEAR");
+  }
+
+  private assert_self(): void {
+    assert(Context.predecessor == Context.contractName, "Only this contract may call itself");
   }
 }

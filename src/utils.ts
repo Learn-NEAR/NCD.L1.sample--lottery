@@ -25,9 +25,15 @@ export const MIN_ACCOUNT_BALANCE = u128.mul(ONE_NEAR, u128.from(3));
 export type AccountId = string;
 
 /**
- * Money in NEAR is a u128.
+ * Amounts, Balances, and Money in NEAR is are u128.
  */
-export type Money = u128;
+
+export type Amount = u128;
+
+export type Balance = Amount;
+
+export type Money = Amount;
+
 
 /**
  * Timestamp in NEAR is a number.
