@@ -7,48 +7,48 @@ type AccountId = string;
 @nearBindgen
 export class Contract {
 
-  private _owner: AccountId;
+  private owner: AccountId;
   private players: Set<AccountId> = new Set();
-  private _pot: u128 = ONE_NEAR;
-  private _active: bool = true;
-  private _winner: AccountId = "";
-  private last_played: AccountId = "";
+  private pot: u128 = ONE_NEAR;
+  private active: bool = true;
+  private winner: AccountId;
+  private last_played: AccountId;
   private fee_strategy: StrategyType = StrategyType.exponential;
 
   constructor(owner: AccountId) {
-    this._owner = owner;
+    this.owner = owner;
   };
 
   // --------------------------------------------------------------------------
   // Public VIEW methods
   // --------------------------------------------------------------------------
 
-  owner(): AccountId {
-    return this._owner;
+  get_owner(): AccountId {
+    return this.owner;
   }
 
-  winner(): AccountId {
-    return this._winner;
+  get_winner(): AccountId {
+    return this.winner;
   }
 
-  pot(): string {
-    return asNEAR(this._pot) + " NEAR";
+  get_pot(): string {
+    return asNEAR(this.pot) + " NEAR";
   }
 
-  feeStrategy(): StrategyType {
+  get_fee_strategy(): StrategyType {
     return this.fee_strategy
   }
 
-  hasPlayed(player: AccountId): bool {
+  get_has_played(player: AccountId): bool {
     return this.players.has(player);
   }
 
-  lastPlayed(): AccountId {
+  get_last_played(): AccountId {
     return this.last_played;
   }
 
-  active(): bool {
-    return this._active;
+  get_active(): bool {
+    return this.active;
   }
 
   // --------------------------------------------------------------------------
@@ -65,7 +65,7 @@ export class Contract {
    */
   @mutateState()
   play(): void {
-    assert(this._active, this._winner + " won " + this.pot() + ". Please reset the game.");
+    assert(this.active, this.winner + " won " + this.pot.toString() + ". Please reset the game.");
     const sender = Context.sender;
 
     // if you've played before then you have to pay extra
@@ -82,7 +82,7 @@ export class Contract {
     this.last_played = sender;
 
     if (this.won()) {
-      this._winner = sender;
+      this.winner = sender;
       this.payout();
     } else {
       this.loser();
@@ -91,26 +91,27 @@ export class Contract {
 
   @mutateState()
   setFeeStrategy(strategy: StrategyType): bool {
-    assert(Context.predecessor == Context.contractName, "Only this contract may call itself");
+    this.assert_self();
+
     this.fee_strategy = strategy;
     return true;
   }
 
   @mutateState()
   on_payout_complete(): void {
-    assert(Context.predecessor == Context.contractName, "Only this contract may call itself");
-    this._active = false;
+    this.assert_self();
+    this.active = false;
     logging.log("game over.");
   }
 
   @mutateState()
   reset(): void {
-    assert(Context.predecessor == Context.contractName, "Only this contract may call itself");
+    this.assert_self();
     this.players.clear();
-    this._winner = "";
+    this.winner = "";
     this.last_played = "";
-    this._pot = ONE_NEAR;
-    this._active = true;
+    this.pot = ONE_NEAR;
+    this.active = true;
   }
 
   // --------------------------------------------------------------------------
@@ -122,7 +123,7 @@ export class Contract {
   }
 
   private increasePot(): void {
-    this._pot = u128.add(this._pot, Context.attachedDeposit);
+    this.pot = u128.add(this.pot, Context.attachedDeposit);
   }
 
   private won(): bool {
@@ -135,11 +136,11 @@ export class Contract {
   }
 
   private payout(): void {
-    logging.log(this._winner + " won " + this.pot() + "!");
+    logging.log(this.winner + " won " + this.pot.toString() + "!");
 
-    if (this._winner.length > 0) {
+    if (this.winner.length > 0) {
       // transfer payout to winner
-      const promise = ContractPromiseBatch.create(this._winner).transfer(this._pot);
+      const promise = ContractPromiseBatch.create(this.winner).transfer(this.pot);
       // set game to inactive
       promise.then(Context.contractName).function_call("on_payout_complete", '{}', u128.Zero, XCC_GAS);
     }
@@ -149,5 +150,9 @@ export class Contract {
     return ("There are " + this.players.size.toString()
       + " players. Playing more than once now costs " + asNEAR(fee)
       + " NEAR");
+  }
+
+  private assert_self(): void {
+    assert(Context.predecessor == Context.contractName, "Only this contract may call itself");
   }
 }
