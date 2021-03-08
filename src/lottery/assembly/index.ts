@@ -72,7 +72,7 @@ export class Contract {
     if (this.players.has(sender)) {
       const fee = this.fee();
       assert(Context.attachedDeposit >= fee, this.generate_fee_message(fee));
-      this.increasePot();
+      this.increase_pot();
 
       // if it's your first time then you may win for the price of gas
     } else {
@@ -122,7 +122,7 @@ export class Contract {
     return Strategy.selector(this.fee_strategy, this.players.size, ONE_NEAR);
   }
 
-  private increasePot(): void {
+  private increase_pot(): void {
     this.pot = u128.add(this.pot, Context.attachedDeposit);
   }
 
@@ -132,7 +132,7 @@ export class Contract {
   }
 
   private loser(): void {
-    logging.log(this.last_played + " did not win.  The pot is currently " + this.pot());
+    logging.log(this.last_played + " did not win.  The pot is currently " + this.pot.toString();
   }
 
   private payout(): void {
