@@ -1,4 +1,4 @@
-import { logging, PersistentSet, Context, u128, ContractPromiseBatch, RNG } from "near-sdk-as";
+import { logging, Context, u128, ContractPromiseBatch, RNG } from "near-sdk-as";
 import { ONE_NEAR, asNEAR, XCC_GAS } from "../../utils";
 import { Strategy, StrategyType } from "./fee-strategies";
 
@@ -8,7 +8,7 @@ type AccountId = string;
 export class Contract {
 
   private _owner: AccountId;
-  private players: PersistentSet<AccountId> = new PersistentSet("p");
+  private players: Set<AccountId> = new Set();
   private _pot: u128 = ONE_NEAR;
   private _active: bool = true;
   private _winner: AccountId = "";
