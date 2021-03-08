@@ -1,9 +1,9 @@
 import { u128 } from "near-sdk-as";
 
 export enum StrategyType {
-  constant = 0 as u8,
-  linear = 1 as u8,
-  exponential = 2 as u8,
+  constant,
+  linear,
+  exponential,
 }
 
 export class Strategy {
