@@ -1,7 +1,10 @@
 import { logging, Context, u128, ContractPromiseBatch, PersistentSet } from "near-sdk-as";
+
+import { ONE_NEAR, asNEAR, XCC_GAS } from "../../utils";
+
 import { FeeStrategy, StrategyType } from "./fee-strategies";
 import { Lottery } from "./lottery";
-import { ONE_NEAR, asNEAR, XCC_GAS } from "../../utils";
+
 
 type AccountId = string;
 

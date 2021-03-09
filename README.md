@@ -47,12 +47,15 @@ src
 │   ├── __tests__
 │   │   ├── README.md
 │   │   ├── fee-strategies.unit.spec.ts
-│   │   └── index.unit.spec.ts
+│   │   ├── index.unit.spec.ts
+│   │   └── lottery.unit.spec.ts
 │   └── assembly
+│       ├── fee-strategies.ts
 │       ├── index.ts
-│       └── models.ts
+│       └── lottery.ts
 └── utils.ts                      <-- shared contract code
 ```
+
 
 ### Simulation Tests
 
@@ -63,4 +66,16 @@ simulation                        <-- simulation tests
 └── src
     ├── lib.rs
     └── lottery.rs
+```
+
+### Helper Scripts
+
+```txt
+└── scripts
+    ├── 1.init.sh
+    ├── 2.play.sh
+    ├── 3.reset.sh
+    ├── README.md                 <-- instructions
+    ├── report.sh
+    └── set-fee-strategy.sh
 ```
