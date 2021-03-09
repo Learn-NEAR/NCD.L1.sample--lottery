@@ -1,6 +1,5 @@
 import { logging, RNG } from "near-sdk-as";
 
-@nearBindgen
 export class Lottery {
   static min: u8 = 1;
   static max: u8 = 100;
