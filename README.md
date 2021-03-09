@@ -71,11 +71,11 @@ simulation                        <-- simulation tests
 ### Helper Scripts
 
 ```txt
-└── scripts
-    ├── 1.init.sh
-    ├── 2.play.sh
-    ├── 3.reset.sh
-    ├── README.md                 <-- instructions
-    ├── report.sh
-    └── set-fee-strategy.sh
+scripts
+├── 1.init.sh
+├── 2.play.sh
+├── 3.reset.sh
+├── README.md                     <-- instructions
+├── report.sh
+└── set-fee-strategy.sh
 ```
