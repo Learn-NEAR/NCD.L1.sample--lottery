@@ -1,6 +1,7 @@
-import { logging, Context, u128, ContractPromiseBatch, RNG, PersistentSet, ContractPromise } from "near-sdk-as";
-import { ONE_NEAR, asNEAR, XCC_GAS, toYocto } from "../../utils";
-import { Strategy, StrategyType, isValidStrategy } from "./fee-strategies";
+import { logging, Context, u128, ContractPromiseBatch, PersistentSet } from "near-sdk-as";
+import { FeeStrategy, StrategyType } from "./fee-strategies";
+import { Lottery } from "./lottery";
+import { ONE_NEAR, asNEAR, XCC_GAS } from "../../utils";
 
 type AccountId = string;
 
@@ -8,12 +9,12 @@ type AccountId = string;
 export class Contract {
 
   private owner: AccountId;
-  private players: PersistentSet<AccountId> = new PersistentSet<AccountId>("p");
-  private pot: u128 = ONE_NEAR;
-  private active: bool = true;
   private winner: AccountId;
   private last_played: AccountId;
-  private fee_strategy: StrategyType = StrategyType.Exponential;
+  private active: bool = true;
+  private pot: u128 = ONE_NEAR;
+  private fee_strategy: FeeStrategy = new FeeStrategy();
+  private players: PersistentSet<AccountId> = new PersistentSet<AccountId>("p");
 
   constructor(owner: AccountId) {
     this.owner = owner;
@@ -35,7 +36,7 @@ export class Contract {
     return asNEAR(this.pot) + " NEAR";
   }
 
-  get_fee_strategy(): StrategyType {
+  get_fee_strategy(): FeeStrategy {
     return this.fee_strategy
   }
 
@@ -49,6 +50,14 @@ export class Contract {
 
   get_active(): bool {
     return this.active;
+  }
+
+  explain_fees(): string {
+    return FeeStrategy.explain()
+  }
+
+  explain_lottery(): string {
+    return Lottery.explain()
   }
 
   // --------------------------------------------------------------------------
@@ -85,15 +94,14 @@ export class Contract {
       this.winner = signer;
       this.payout();
     } else {
-      this.loser();
+      this.lose();
     }
   }
 
   @mutateState()
   set_fee_strategy(strategy: StrategyType): bool {
     this.assert_self();
-    assert(isValidStrategy(strategy), "Invalid StrategyType: " + strategy.toString());
-    this.fee_strategy = strategy;
+    this.fee_strategy = new FeeStrategy(strategy);
     return true;
   }
 
@@ -121,7 +129,7 @@ export class Contract {
   // --------------------------------------------------------------------------
 
   private fee(): u128 {
-    return Strategy.selector(this.fee_strategy, this.players.size, ONE_NEAR);
+    return this.fee_strategy.calculate_fee(this.players.size, ONE_NEAR);
   }
 
   private increase_pot(): void {
@@ -129,11 +137,10 @@ export class Contract {
   }
 
   private won(): bool {
-    const rng = new RNG<u8>(1, 100);
-    return rng.next() <= 20; // 1 in 5 chance
+    return Lottery.play()
   }
 
-  private loser(): void {
+  private lose(): void {
     logging.log(this.last_played + " did not win.  The pot is currently " + this.get_pot());
   }
 
@@ -148,7 +155,7 @@ export class Contract {
       to_winner.transfer(this.pot);
 
       // receive confirmation of payout before setting game to inactive
-      to_winner.then(self).function_call("on_payout_complete", '{}', u128.Zero, XCC_GAS);
+      to_winner.then(self).function_call("on_payout_complete", "{}", u128.Zero, XCC_GAS);
     }
   }
 

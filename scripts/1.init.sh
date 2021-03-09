@@ -1,5 +1,7 @@
-[ -z "$CONTRACT" ] && echo "Missing \$CONTRACT environment variable" && exit 1
-[ -z "$OWNER" ] && echo "Missing \$OWNER environment variable" && exit 1
+#!/usr/bin/env bash
+
+[ -z "$CONTRACT" ] && echo "Missing \$CONTRACT environment variable"
+[ -z "$OWNER" ] && echo "Missing \$OWNER environment variable"
 
 echo "deleting $CONTRACT and setting $OWNER as beneficiary"
 echo

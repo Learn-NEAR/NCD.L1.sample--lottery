@@ -1,4 +1,7 @@
-[ -z "$1" ] && echo "No fee strategy supplied. Append a 0, 1 or 2" && exit 1
+#!/usr/bin/env bash
+set -e
+
+[ -z "$1" ] && echo "No fee strategy supplied. Append a 0, 1, 2 or 3" && exit 1
 echo
 echo 'About to call set_fee_strategy() on the contract'
 echo near call \$CONTRACT set_fee_strategy --account_id \$CONTRACT \$1

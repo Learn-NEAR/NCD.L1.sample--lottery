@@ -1,3 +1,6 @@
+#!/usr/bin/env bash
+set -e
+
 echo
 echo 'About to call play() on the contract'
 echo near call \$CONTRACT play --account_id \$PLAYER --amount \$1
