@@ -47,7 +47,8 @@ It uses the following setup:
   3.reset.sh              # reset the game when it's finished (ie. "active" is false)
 
   report.sh               # run a report of the game state
-  set-fee-strategy.sh     # change the fee strategy to any one of many supported strategies
+  x-configure-fee.sh      # change the fee strategy to any one of many supported strategies
+  x-configure-lottery.sh  # change the terms of the lottery by adjusting chance in the range (0..1]
   ```
 
 ### Terminal **B**

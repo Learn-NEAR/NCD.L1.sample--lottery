@@ -26,11 +26,11 @@ The goal of this repository is to make it as easy as possible to get started wri
 
 ### Other documentation
 
-- **Lottery** contract and test documentation
+- Lottery contract and test documentation
   - see `/src/lottery/README` for Lottery interface
   - see `/src/lottery/__tests__/README` for Lottery unit testing details
 
-- simulation tests
+- Lottery contract simulation tests
   - see `/simulation/README` for simulation testing
 
 
@@ -77,5 +77,6 @@ scripts
 ├── 3.reset.sh
 ├── README.md                     <-- instructions
 ├── report.sh
-└── set-fee-strategy.sh
+├── x-configure-fee.sh
+└── x-configure-lottery.sh
 ```
