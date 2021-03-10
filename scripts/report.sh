@@ -62,12 +62,17 @@ echo "--------------------------------------------"
 echo Lottery Fees
 echo "--------------------------------------------"
 
-# explain fees for the lottery -> string
-echo "near view \$CONTRACT explain_fees '{}'"
-near view $CONTRACT explain_fees '{}'
+# what is the fee for the lottery? -> string
+echo "near view \$CONTRACT get_fee '{}'"
+near view $CONTRACT get_fee '{}'
 echo
 
 # what is the fee strategy for the lottery? -> StrategyType
 echo "near view \$CONTRACT get_fee_strategy '{}'"
 near view $CONTRACT get_fee_strategy '{}'
+echo
+
+# explain fees for the lottery -> string
+echo "near view \$CONTRACT explain_fees '{}'"
+near view $CONTRACT explain_fees '{}'
 echo

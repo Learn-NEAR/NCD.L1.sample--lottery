@@ -17,6 +17,7 @@ export class Contract {
   private active: bool = true;
   private pot: u128 = ONE_NEAR;
   private fee_strategy: FeeStrategy = new FeeStrategy();
+  private lottery: Lottery = new Lottery();
   private players: PersistentSet<AccountId> = new PersistentSet<AccountId>("p");
 
   constructor(owner: AccountId) {
@@ -37,6 +38,10 @@ export class Contract {
 
   get_pot(): string {
     return asNEAR(this.pot) + " NEAR";
+  }
+
+  get_fee(): string {
+    return asNEAR(this.fee()) + " NEAR";
   }
 
   get_fee_strategy(): FeeStrategy {
@@ -60,7 +65,7 @@ export class Contract {
   }
 
   explain_lottery(): string {
-    return Lottery.explain()
+    return this.lottery.explain()
   }
 
   // --------------------------------------------------------------------------
@@ -102,7 +107,14 @@ export class Contract {
   }
 
   @mutateState()
-  set_fee_strategy(strategy: StrategyType): bool {
+  configure_lottery(chance: string, min: u32 = 1, max: u32 = 100): bool {
+    this.assert_self();
+    this.lottery.configure(<f32>parseFloat(chance), min, max);
+    return true;
+  }
+
+  @mutateState()
+  configure_fee(strategy: StrategyType): bool {
     this.assert_self();
     this.fee_strategy = new FeeStrategy(strategy);
     return true;
@@ -140,7 +152,7 @@ export class Contract {
   }
 
   private won(): bool {
-    return Lottery.play()
+    return this.lottery.play()
   }
 
   private lose(): void {
