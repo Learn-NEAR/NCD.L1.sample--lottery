@@ -19,6 +19,7 @@ export class FeeStrategy {
     return "one of [ Free | Constant | Linear | Exponential ]";
   }
 
+  // TODO: handle possible overflow for each strategy
   calculate_fee(scalar: u32, base: u128): u128 {
     let fee: u128 = u128.Zero;
 
