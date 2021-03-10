@@ -1,4 +1,11 @@
 // --------------------------------------------
+// --------------------------------------------
+// VIEW Methods
+// --------------------------------------------
+// --------------------------------------------
+
+
+// --------------------------------------------
 // Contract Metadata
 // --------------------------------------------
 
@@ -34,8 +41,34 @@
 // Lottery Fees
 // --------------------------------------------
 
+// what is the fee for the lottery? -> string
+// get_fee(): string
+
+// what is the fee strategy for the lottery? -> StrategyType
+// get_fee_strategy(): StrategyType
+
 // explain fees for the lottery -> string
 // explain_fees(): string
 
-// what is the fee strategy for the lottery? -> StrategyType
-// get_fee(): FeeStrategy
+
+// --------------------------------------------
+// --------------------------------------------
+// CHANGE Methods
+// --------------------------------------------
+// --------------------------------------------
+
+// play the lottery
+// play(): void
+
+// configure the terms of the lottery
+// configure_lottery(chance: string, min: u32 = 1, max: u32 = 100): bool
+
+// configure the fee strategy
+// configure_fee(strategy: StrategyType): bool
+
+// reset the lottery
+// reset(): void
+
+// CANNOT BE TESTED using unit tests because it's a callback (after payout is complete)
+// MUST USE SIMULATION tests to verify this works as expected
+// on_payout_complete(): void {
