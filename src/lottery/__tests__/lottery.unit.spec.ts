@@ -1,23 +1,17 @@
 import { Lottery } from "../assembly/lottery";
 
 let lottery: Lottery;
+beforeEach(() => {
+  lottery = new Lottery()
+})
 
 describe("Lottery", () => {
-
-  beforeEach(() => {
-    lottery = new Lottery()
-  })
-
   it("can explain itself", () => {
     expect(lottery.explain()).toBe("Players have a 20.0% chance of winning.")
   })
 })
 
 describe("Lottery # play", () => {
-  beforeEach(() => {
-    lottery = new Lottery()
-  })
-
   // TODO: how do we actually test this?
   it("plays", () => {
     // 100% chance of winning
@@ -33,11 +27,6 @@ describe("Lottery # play", () => {
 })
 
 describe("Lottery#configure", () => {
-
-  beforeEach(() => {
-    lottery = new Lottery()
-  })
-
   it("can be reconfigured", () => {
     lottery.configure(1)
     expect(lottery.explain()).toBe("Players have a 100.0% chance of winning.")
