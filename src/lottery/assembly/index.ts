@@ -105,9 +105,9 @@ export class Contract {
   }
 
   @mutateState()
-  configure_lottery(chance: string, min: u32 = 1, max: u32 = 100): bool {
+  configure_lottery(chance: string): bool {
     this.assert_self();
-    this.lottery.configure(<f32>parseFloat(chance), min, max);
+    this.lottery.configure(<f32>parseFloat(chance));
     return true;
   }
 
