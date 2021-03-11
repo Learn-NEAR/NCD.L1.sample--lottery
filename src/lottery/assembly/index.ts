@@ -42,8 +42,8 @@ export class Contract {
     return asNEAR(this.fee()) + " NEAR";
   }
 
-  get_fee_strategy(): FeeStrategy {
-    return this.fee_strategy
+  get_fee_strategy(): StrategyType {
+    return this.fee_strategy.strategy
   }
 
   get_has_played(player: AccountId): bool {

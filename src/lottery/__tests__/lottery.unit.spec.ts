@@ -11,17 +11,15 @@ describe("Lottery", () => {
   })
 })
 
-describe("Lottery # play", () => {
+describe("Lottery#play", () => {
   // TODO: how do we actually test this?
-  it("plays", () => {
+  it("plays like a lottery", () => {
     // 100% chance of winning
     lottery.configure(1)
-    // log(lottery.explain())
     expect(lottery.play()).toBe(true)
 
-    // 1 in 1000 chance of winning
-    lottery.configure(0.0001)
-    // log(lottery.explain())
+    // 0% chance of winning (1 in 10 billion ... but the limit is 1 in 1 billion bc u32)
+    lottery.configure(0.000000001)
     expect(lottery.play()).toBe(false)
   })
 })
@@ -39,6 +37,10 @@ describe("Lottery#configure", () => {
 
     lottery.configure(0.01)
     expect(lottery.explain()).toBe("Players have a 1.0% chance of winning.")
+
+    // TODO: format this level of message more clearly
+    lottery.configure(0.000000001)
+    expect(lottery.explain()).toBe("Players have a 1.0000000000000001e-7% chance of winning.")
   })
 
   it("throws with invalid values for chance", () => {
