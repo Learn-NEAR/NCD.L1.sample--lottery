@@ -53,9 +53,9 @@
     nearley "^2.20.1"
 
 "@assemblyscript/loader@^0.18.9":
-  version "0.18.12"
-  resolved "https://registry.yarnpkg.com/@assemblyscript/loader/-/loader-0.18.12.tgz#fa05199dae28a4646cb67b6b2215df623bda343d"
-  integrity sha512-543yZXvPM+x2v9SVNN3sNmY/epxI1OPDttGNp0BFmDqNtrB2ZmOIVWz0IOuZ5sU1icbdGkU4pRz9xP+YpyfILg==
+  version "0.18.15"
+  resolved "https://registry.yarnpkg.com/@assemblyscript/loader/-/loader-0.18.15.tgz#9c3c6c15ad51a522b619b6faf34e3d0c7ba894ed"
+  integrity sha512-kUWC6tBJQiI38vFT6L9M2zlzJ3/Wgh8JZEIMekgkhXjLkDTMWcmOZX085RsOx5c9BdwrqMwaj/iMIpCbid214g==
 
 ansi-regex@^5.0.0:
   version "5.0.0"
@@ -69,7 +69,7 @@ ansi-styles@^4.0.0, ansi-styles@^4.1.0:
   dependencies:
     color-convert "^2.0.1"
 
-as-bignum@^0.2.12:
+as-bignum@^0.2.15:
   version "0.2.15"
   resolved "https://registry.yarnpkg.com/as-bignum/-/as-bignum-0.2.15.tgz#34c9787d096943a8d3ded5ef3a89844bce27b2ac"
   integrity sha512-pGUyKIQ/KQa5L44IStjuZLJPJAPeuFK6SvlhlhTIvqMHdc2OTfxJbWaz4Zx2dczOMaOq8ohPAMa/qq1N+k3yQg==
@@ -87,11 +87,11 @@ assemblyscript-json@^1.0.0:
   integrity sha512-Cv96RESaVbCJn6jqVPXJlrClb3ZoLwcoSNFPDpHMXxi7NqLBeUGhV6zitSjLIgPHXVocIuYYH+SnykzEtErrBg==
 
 assemblyscript@^0.18.9:
-  version "0.18.12"
-  resolved "https://registry.yarnpkg.com/assemblyscript/-/assemblyscript-0.18.12.tgz#2fd706c427bc8953deebbd6b52d9e2a3552a179c"
-  integrity sha512-a0zJlb4xgEtxdadrrIP9MuLmQuRE6ZVzXPi2RZoVG6zgz+nLYLt1mkiP/TbJRY+4wvf1peTCZok+vyRAxFjppQ==
+  version "0.18.15"
+  resolved "https://registry.yarnpkg.com/assemblyscript/-/assemblyscript-0.18.15.tgz#b66a4d96c7de14e311303fb7c8ccf14b9d689e8f"
+  integrity sha512-s1N1qwdBhen2SLQApYCtRIPWm1Am3oAbW58GCEKbeN6ZbQRh7nq0pv4RDqKw6CgK7dySn/F2S1D6p0scyRbQRw==
   dependencies:
-    binaryen "98.0.0-nightly.20210106"
+    binaryen "100.0.0"
     long "^4.0.0"
 
 axios@^0.19.0:
@@ -125,10 +125,10 @@ binary-install@^0.0.1:
     tar "^5.0.5"
     universal-url "^2.0.0"
 
-binaryen@98.0.0-nightly.20210106:
-  version "98.0.0-nightly.20210106"
-  resolved "https://registry.yarnpkg.com/binaryen/-/binaryen-98.0.0-nightly.20210106.tgz#c7bc637e2223a83bf3cae9d98969f569efab4062"
-  integrity sha512-iunAgesqT9PXVYCc72FA4h0sCCKLifruT6NuUH63xqlFJGpChhZLgOtyIb/fIgTibN5Pd692cxfBViyCWFsJ9Q==
+binaryen@100.0.0:
+  version "100.0.0"
+  resolved "https://registry.yarnpkg.com/binaryen/-/binaryen-100.0.0.tgz#8ed91955eff14eb4758d68d593869cbc1a9a0dff"
+  integrity sha512-nxOt8d8/VXAuSVEtAWUdKrqpqCy365QqD223EzzB1GzS5himiZAfM/R5lXx+M/5q8TB8cYp3tYxv5rTjNTJveQ==
 
 bn.js@^5.1.1:
   version "5.2.0"
@@ -236,9 +236,9 @@ emoji-regex@^8.0.0:
   integrity sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==
 
 env-paths@^2.2.0:
-  version "2.2.0"
-  resolved "https://registry.yarnpkg.com/env-paths/-/env-paths-2.2.0.tgz#cdca557dc009152917d6166e2febe1f039685e43"
-  integrity sha512-6u0VYSCo/OW6IoD5WCLLy9JUGARbamfSavcNXry/eu8aHVFei6CD3Sw+VGX5alea1i9pgPHW0mbu6Xj0uBh7gA==
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/env-paths/-/env-paths-2.2.1.tgz#420399d416ce1fbe9bc0a07c62fa68d67fd0f8f2"
+  integrity sha512-+h1lkLKhZMTYjog1VEpJNG7NZJWcuc2DDk/qsqSTRRCOXiLjeQ1d1/udrUGhqMxUgAlwKNZ0cf2uqan5GLuS2A==
 
 escalade@^3.1.1:
   version "3.1.1"
@@ -388,36 +388,36 @@ ms@2.0.0:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.0.0.tgz#5608aeadfc00be6c2901df5f9861788de0d597c8"
   integrity sha1-VgiurfwAvmwpAd9fmGF4jeDVl8g=
 
-near-mock-vm@^3.0.0-alpha.0:
-  version "3.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/near-mock-vm/-/near-mock-vm-3.0.0-alpha.0.tgz#0543799b41d5426151a78d858d3dd300006a0c57"
-  integrity sha512-4gRpY7gy7NKhd7oAqzN74Mfaky6YGLv8RF56Jn0GnNP5Z7V7VxXtWmRZGRRUcHcJ6IiACAq5Npph8PPQ9p2ZLQ==
+near-mock-vm@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/near-mock-vm/-/near-mock-vm-3.0.0.tgz#1108e654bda7131d470dfd02035e8232e8799874"
+  integrity sha512-l4ucgkEjIrReQoXV1HUYdLCOIxdnaLyrJnrXKxsP3kT5Aj+HNXRnJGy+F/czeAAWcZYNwNGXaKR/AyPRUg+tZQ==
   dependencies:
     "@assemblyscript/loader" "^0.18.9"
     yargs "^16.2.0"
 
-near-sdk-as@^3.0.0-alpha.0:
-  version "3.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/near-sdk-as/-/near-sdk-as-3.0.0-alpha.0.tgz#2ee01b0152ce3bc3bc4a0039f0a48b140ea34ecf"
-  integrity sha512-HwDE1hJALl/GlaAlOzuMz9yPfDV0dwR0v/qZDEhIQMELXtljgza0P7L9BKRkB5id43RZ76qEo4op0DtPi5xv+A==
+near-sdk-as@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/near-sdk-as/-/near-sdk-as-3.0.0.tgz#ab857363f6a849cabfe0e59a541b0c52ae485753"
+  integrity sha512-e5QvOd5C7wbX6Qwsz8B2+vZ2PvMleQgWPbW4LH7Y3cZG222fcNaf3AxErFLiA8qouZK+zVyMO72rMViHYffPbA==
   dependencies:
-    near-mock-vm "^3.0.0-alpha.0"
-    near-sdk-bindgen "^3.0.0-alpha.0"
-    near-sdk-core "^3.0.0-alpha.0"
-    near-sdk-simulator "^3.0.0-alpha.0"
+    near-mock-vm "^3.0.0"
+    near-sdk-bindgen "^3.0.0"
+    near-sdk-core "^3.0.0"
+    near-sdk-simulator "^3.0.0"
 
-near-sdk-bindgen@^3.0.0-alpha.0:
-  version "3.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/near-sdk-bindgen/-/near-sdk-bindgen-3.0.0-alpha.0.tgz#ae8780eee70b1556ba273995bb302f4f4fc1c797"
-  integrity sha512-lHdNu0g30UWUlfCv5ZHemoegOwTvGEUXqXWYpVt+Ni7PUH8WnE6FGVSuogy2itPDn7RZ10jai/Ig1jRzVgUzOw==
+near-sdk-bindgen@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/near-sdk-bindgen/-/near-sdk-bindgen-3.0.0.tgz#6f7f5ad327bdedb36dc4e3be5bddd08a70ef6b85"
+  integrity sha512-6/XGs9CJaMAUv9+intJFXzgOw6ShVwQEjO+9EZOpfDmjFn3s22YLlcA7O5COt8GAv1zjlk9t8zWgUD/RHoVSPA==
 
-near-sdk-core@^3.0.0-alpha.0:
-  version "3.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/near-sdk-core/-/near-sdk-core-3.0.0-alpha.0.tgz#b593a476e19bb0e526faf87e0ca6bc737c607830"
-  integrity sha512-8xL9lmob72btHFrrUhDtcKzvZV/YqhPU1MIpj9rgb4cH5J7JyK1ZDPsYhkAUjTjTSYN3Yi04QdwAQOFTJ/aVhw==
+near-sdk-core@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/near-sdk-core/-/near-sdk-core-3.0.0.tgz#67ab39b08319b6c72c90462870042d9deb43d90d"
+  integrity sha512-Sq2FDJRJKhS/C0JMnUR3B/m6sidyigCkMBvyLrptQ+RC5R5X+8d9E+jJxKogHIfGkZH3Xa10q681rMuR6g0O3w==
   dependencies:
     "@as-pect/cli" "^6.0.0"
-    as-bignum "^0.2.12"
+    as-bignum "^0.2.15"
     asbuild "^0.0.11"
     assemblyscript "^0.18.9"
     assemblyscript-json "^1.0.0"
@@ -427,10 +427,10 @@ near-sdk-core@^3.0.0-alpha.0:
     near-vm "^1.1.0"
     visitor-as "^0.4.0"
 
-near-sdk-simulator@^3.0.0-alpha.0:
-  version "3.0.0-alpha.0"
-  resolved "https://registry.yarnpkg.com/near-sdk-simulator/-/near-sdk-simulator-3.0.0-alpha.0.tgz#de502c74d5ba559f9f6d0804499a6f059320b186"
-  integrity sha512-fgkuR4w/RZhJ27Ngqpf01SBRZGeO1ajBmAb6Rx6XRbzpDpiYRKDF9n14WOkIIvt6I9tyciOr1bynmLyu2TCvmQ==
+near-sdk-simulator@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/near-sdk-simulator/-/near-sdk-simulator-3.0.0.tgz#82212154b4fb53cbce39b126de75516f37cf2419"
+  integrity sha512-5FlDDen62C33lmFPLdOu0CvD2YaVNeku3WXY8DdH+oisKvLijqGmAK9nzH9Fse393uLDXcsi3LGmmz7Em2ntqQ==
 
 near-vm@^1.1.0:
   version "1.1.0"
@@ -664,9 +664,9 @@ yargs-parser@^18.1.2:
     decamelize "^1.2.0"
 
 yargs-parser@^20.2.2:
-  version "20.2.6"
-  resolved "https://registry.yarnpkg.com/yargs-parser/-/yargs-parser-20.2.6.tgz#69f920addf61aafc0b8b89002f5d66e28f2d8b20"
-  integrity sha512-AP1+fQIWSM/sMiET8fyayjx/J+JmTPt2Mr0FkrgqB4todtfa53sOsrSAcIrJRD5XS20bKUwaDIuMkWKCEiQLKA==
+  version "20.2.7"
+  resolved "https://registry.yarnpkg.com/yargs-parser/-/yargs-parser-20.2.7.tgz#61df85c113edfb5a7a4e36eb8aa60ef423cbc90a"
+  integrity sha512-FiNkvbeHzB/syOjIUxFDCnhSfzAL8R5vs40MgLFBorXACCOAEaWu0gRZl14vG8MR9AOJIZbmkjhusqBYZ3HTHw==
 
 yargs@^15.4.1:
   version "15.4.1"
