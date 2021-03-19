@@ -46,7 +46,7 @@ describe("Contract interface for Lottery", () => {
 
   it("provides an explanation of the lottery", () => {
     // explain terms of the lottery -> string
-    expect(lottery.explain_lottery()).toBe("Players have a 20.0% chance of winning.")
+    expect(lottery.explain_lottery()).toBe("Players have a 1 in 10 chance of winning. Xing is most favorable, increasing your chance to win after each play by 10.0%")
   });
 
   it("provides a value for what a player may win", () => {
@@ -87,7 +87,7 @@ describe("Contract interface for Lottery", () => {
 
     // setup lottery to guarantee a win
     VMContext.setPredecessor_account_id(contract) // resolves Error: "Only this contract may call itself"
-    lottery.configure_lottery('1.0') // 100% chance of winning
+    lottery.configure_lottery('1', '1') // 100% chance of winning
 
     VMContext.setSigner_account_id(player1)
     lottery.play()
@@ -139,12 +139,12 @@ describe("Contract interface for Lottery Management", () => {
 
   it("allows ONLY the owner to change the terms of the lottery", () => {
     // configure the terms of the lottery
-    expect(lottery.explain_lottery()).toBe("Players have a 20.0% chance of winning.")
+    expect(lottery.explain_lottery()).toBe("Players have a 1 in 10 chance of winning. Xing is most favorable, increasing your chance to win after each play by 10.0%")
 
     VMContext.setPredecessor_account_id(contract) // resolves Error: "Only this contract may call itself"
 
-    lottery.configure_lottery('1')
-    expect(lottery.explain_lottery()).toBe("Players have a 100.0% chance of winning.")
+    lottery.configure_lottery('1', '1')
+    expect(lottery.explain_lottery()).toBe("Players have a 1 in 2 (or better!) chance of winning. Xing is most favorable, increasing your chance to win after each play by 0.0%")
   });
 
   it("adjusts the fee based on FeeStrategy", () => {

@@ -1,6 +1,6 @@
-import { logging, Context, u128, ContractPromiseBatch, PersistentSet } from "near-sdk-as";
+import { logging, Context, u128, ContractPromiseBatch, PersistentSet, context } from "near-sdk-as";
 
-import { AccountId, ONE_NEAR, asNEAR, XCC_GAS } from "../../utils";
+import { AccountId, ONE_NEAR, asNEAR, XCC_GAS, MIN_ACCOUNT_BALANCE } from "../../utils";
 
 import { FeeStrategy, StrategyType } from "./fee-strategies";
 import { Lottery } from "./lottery";
@@ -10,6 +10,7 @@ import { Lottery } from "./lottery";
 export class Contract {
 
   private owner: AccountId;
+  private beneficiary: AccountId;
   private winner: AccountId;
   private last_played: AccountId;
   private active: bool = true;
@@ -18,8 +19,9 @@ export class Contract {
   private lottery: Lottery = new Lottery();
   private players: PersistentSet<AccountId> = new PersistentSet<AccountId>("p");
 
-  constructor(owner: AccountId) {
+  constructor(owner: AccountId, beneficiary: AccountId = "") {
     this.owner = owner;
+    this.beneficiary = beneficiary.length > 0 ? beneficiary : owner;
   };
 
   // --------------------------------------------------------------------------
@@ -86,7 +88,8 @@ export class Contract {
     // if you've played before then you have to pay extra
     if (this.players.has(signer)) {
       const fee = this.fee();
-      assert(Context.attachedDeposit >= fee, this.generate_fee_message(fee));
+      // only accept calls with at LEAST the required fee attached and NO MORE than 110% of the required fee
+      assert(Context.attachedDeposit == fee, this.generate_fee_message(fee));
       this.increase_pot();
 
       // if it's your first time then you may win for the price of gas
@@ -105,9 +108,9 @@ export class Contract {
   }
 
   @mutateState()
-  configure_lottery(chance: string): bool {
+  configure_lottery(chance: string, xing: string): bool {
     this.assert_self();
-    this.lottery.configure(<f32>parseFloat(chance));
+    this.lottery.configure(<f64>parseFloat(chance), <f32>parseFloat(xing));
     return true;
   }
 
@@ -124,8 +127,9 @@ export class Contract {
     this.players.clear();
     this.winner = "";
     this.last_played = "";
-    this.pot = ONE_NEAR;
+    this.lottery = new Lottery();
     this.active = true;
+    this.pot = ONE_NEAR;
   }
 
   // this method is only here for the promise callback,
@@ -133,8 +137,16 @@ export class Contract {
   @mutateState()
   on_payout_complete(): void {
     this.assert_self();
+    this.pot = u128.Zero
     this.active = false;
     logging.log("game over.");
+    this.transfer_balance();
+  }
+
+  @mutateState()
+  private transfer_balance(): void {
+    const to_beneficiary = ContractPromiseBatch.create(this.beneficiary)
+    to_beneficiary.transfer(u128.sub(context.accountBalance, u128.from(MIN_ACCOUNT_BALANCE)))
   }
 
   // --------------------------------------------------------------------------
@@ -155,6 +167,7 @@ export class Contract {
 
   private lose(): void {
     logging.log(this.last_played + " did not win.  The pot is currently " + this.get_pot());
+    this.lottery.xingyun();
   }
 
   private payout(): void {
@@ -165,7 +178,7 @@ export class Contract {
       const self = Context.contractName
 
       // transfer payout to winner
-      to_winner.transfer(this.pot);
+      to_winner.transfer(u128.mul(this.pot, u128.from(0.99))); // send 99% of the pot to winner, keep 1%
 
       // receive confirmation of payout before setting game to inactive
       to_winner.then(self).function_call("on_payout_complete", "{}", u128.Zero, XCC_GAS);
