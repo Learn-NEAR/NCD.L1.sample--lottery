@@ -1,4 +1,4 @@
-import { logging, Context, u128, ContractPromiseBatch, PersistentSet, context } from "near-sdk-as";
+import { logging, Context, u128, ContractPromiseBatch, PersistentSet, context, ContractPromiseResult, PromiseStatus, ContractPromise } from "near-sdk-as";
 
 import { AccountId, ONE_NEAR, asNEAR, XCC_GAS, MIN_ACCOUNT_BALANCE } from "../../utils";
 
@@ -136,6 +136,7 @@ export class Contract {
   // it should never be called directly
   @mutateState()
   on_payout_complete(): void {
+    this.assert_single_promise_success()
     this.assert_self();
     this.pot = u128.Zero
     this.active = false;
@@ -195,5 +196,11 @@ export class Contract {
     const caller = Context.predecessor
     const self = Context.contractName
     assert(caller == self, "Only this contract may call itself");
+  }
+
+  private assert_single_promise_success() {
+    const x = ContractPromise.getResults()
+    assert(x.length == 1, "Expected exactly one promise result")
+    assert(x[0].succeeded, "Expected PromiseStatus to be successful")
   }
 }
