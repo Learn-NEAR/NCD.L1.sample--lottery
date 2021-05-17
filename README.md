@@ -6,6 +6,9 @@ The example here is playful.  It's a toy involving a lottery.
 
 The goal of this repository is to make it as easy as possible to get started writing unit and simulation tests for AssemblyScript contracts built to work with NEAR Protocol.
 
+## ⚠️ Warning
+
+Any content produced by NEAR, or developer resources that NEAR provides, are for educational and inspiration purposes only.  NEAR does not encourage, induce or sanction the deployment of any such applications in violation of applicable laws or regulations.
 
 ## Usage
 
