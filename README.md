@@ -12,7 +12,7 @@ Any content produced by NEAR, or developer resources that NEAR provides, are for
 
 ## Usage
 
-## Prerequisites:
+### Prerequisites:
 
 - Current version of [Node.js](https://nodejs.org/) <=v14.18.3
 
