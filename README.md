@@ -12,6 +12,10 @@ Any content produced by NEAR, or developer resources that NEAR provides, are for
 
 ## Usage
 
+### Prerequisites:
+
+- Current version of [Node.js](https://nodejs.org/) <=v14.18.3
+
 ### Getting started
 
 1. clone this repo to a local folder
