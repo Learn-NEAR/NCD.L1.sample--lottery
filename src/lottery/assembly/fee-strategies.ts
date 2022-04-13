@@ -1,4 +1,5 @@
 import { env, logging, u128 } from "near-sdk-as";
+import { ONE_NEAR } from "../../utils";
 
 export const enum StrategyType {
   Free = 0,
@@ -10,7 +11,8 @@ export const enum StrategyType {
 @nearBindgen
 export class FeeStrategy {
   constructor(
-    public strategy: StrategyType = StrategyType.Exponential
+    public strategy: StrategyType = StrategyType.Exponential,
+    public limit: u128 = u128.mul(u128.from(25), ONE_NEAR) // max 100 N
   ) {
     this.assert_valid_fee_strategy(strategy);
   }
@@ -40,7 +42,9 @@ export class FeeStrategy {
         logging.log("Unexpected StrategyType encountered");
         env.panic();
     }
-    return fee;
+
+    // TODO: add u128.min()
+    return fee <= this.limit ? fee : this.limit
   }
 
   //---------------------------------------------------------------------------
