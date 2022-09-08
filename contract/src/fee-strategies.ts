@@ -1,4 +1,4 @@
-import { assert, near } from "near-sdk-js";
+import { assert } from "near-sdk-js";
 
 export const enum StrategyType {
   Free,
@@ -42,8 +42,7 @@ export class FeeStrategy {
         fee = this.calculateExponential(scalar, base);
         break;
       default:
-        near.log("Unexpected StrategyType encountered");
-        near.panic();
+        throw new Error("Unexpected StrategyType encountered");
     }
 
     return fee;

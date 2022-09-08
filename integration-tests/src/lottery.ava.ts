@@ -66,7 +66,7 @@ test("Lottery#configure will throw if invalid value for chance", async (t) => {
 });
 
 // TODO: Currently cannot optimize gas enough to make this work
-test.skip("Lottery#play wins if chance is 100%", async (t) => {
+test("Lottery#play wins if chance is 100%", async (t) => {
   const { contract } = t.context.accounts;
   await contract.call(contract, "configure_lottery", { chance: 1 });
   await contract.call(contract, "play", {}, { gas: GAS });

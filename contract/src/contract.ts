@@ -1,12 +1,12 @@
 import {
   NearBindgen,
-  NearContract,
   near,
   call,
   view,
   UnorderedSet,
   bytes,
   assert,
+  initialize,
 } from "near-sdk-js";
 import { FeeStrategy, StrategyType } from "./fee-strategies";
 import { Lottery } from "./lottery";
@@ -17,8 +17,8 @@ BigInt.prototype["toJSON"] = function () {
 };
 
 // The @NearBindgen decorator allows this code to compile to Base64.
-@NearBindgen
-export class Contract extends NearContract {
+@NearBindgen({ requireInit: true })
+export class Contract {
   private owner: string;
   private winner: string;
   private lastPlayed: string;
@@ -28,61 +28,62 @@ export class Contract extends NearContract {
   private feeStrategy: FeeStrategy = new FeeStrategy();
   private players: UnorderedSet = new UnorderedSet("players");
 
-  constructor({ owner }: { owner: string }) {
-    super();
+  constructor() {}
+
+  @initialize({})
+  init({ owner }: { owner: string }) {
     this.owner = owner;
   }
 
-  default(): Contract {
-    return new Contract({ owner: "" });
-  }
-
-  @view
+  @view({})
   get_owner(): string {
     return this.owner;
   }
 
-  @view
+  @view({})
   get_winner(): string {
     return this.winner;
   }
 
-  @view
+  @view({})
   get_pot(): string {
     return `${asNEAR(this.pot)} NEAR`;
   }
 
-  @view
+  @view({})
   get_fee(): string {
     return asNEAR(this.fee()) + " NEAR";
   }
 
-  @view
+  @view({})
   get_fee_strategy(): StrategyType {
     return FeeStrategy.from(this.feeStrategy).strategyType;
   }
 
-  @view
+  @view({})
   get_has_played({ player }: { player: string }): boolean {
     return this.players.contains(player);
   }
 
-  @view
+  @view({})
   get_last_played(): string {
+    near.log(
+      `lastPlayed:${this.lastPlayed},active:${this.active},owner:${this.owner}`
+    );
     return this.lastPlayed;
   }
 
-  @view
+  @view({})
   get_active(): boolean {
     return this.active;
   }
 
-  @view
+  @view({})
   explain_fees(): string {
     return FeeStrategy.from(this.feeStrategy).explain();
   }
 
-  @view
+  @view({})
   explain_lottery(): string {
     return Lottery.from(this.lottery).explain();
   }
@@ -99,20 +100,20 @@ export class Contract extends NearContract {
    * If you've already played once then any other play costs you a fee.
    * This fee is calculated as 1 NEAR X the square of the total number of unique players
    */
-  @call
+  @call({ payableFunction: true })
   play(): void {
     assert(
       this.active,
       `${this.winner} won ${this.pot}. Please reset the game.`
     );
     const signer = near.signerAccountId();
-    const deposit = BigInt(Number(near.attachedDeposit()));
+    const deposit = near.attachedDeposit();
 
     // if you've played before then you have to pay extra
     if (this.players.contains(signer)) {
       const fee = this.fee();
       assert(deposit >= fee, this.generateFeeMessage(fee));
-      this.increasePot();
+      this.pot = BigInt(this.pot) + deposit;
 
       // if it's your first time then you may win for the price of gas
     } else {
@@ -120,6 +121,7 @@ export class Contract extends NearContract {
     }
 
     this.lastPlayed = signer;
+    near.log(`Updated lastPlayed to ${this.lastPlayed}`);
 
     if (Lottery.from(this.lottery).play()) {
       this.winner = signer;
@@ -152,10 +154,8 @@ export class Contract extends NearContract {
     }
   }
 
-  @call
+  @call({ privateFunction: true })
   configure_lottery({ chance }: { chance: number }): boolean {
-    this.assertSelf();
-
     const lottery = Lottery.from(this.lottery);
     lottery.configure(chance);
 
@@ -163,16 +163,14 @@ export class Contract extends NearContract {
     return true;
   }
 
-  @call
+  @call({ privateFunction: true })
   configure_fee({ strategy }: { strategy: StrategyType }): boolean {
-    this.assertSelf();
     this.feeStrategy = new FeeStrategy(strategy);
     return true;
   }
 
-  @call
+  @call({ privateFunction: true })
   reset(): void {
-    this.assertSelf();
     this.players.clear();
     this.winner = "";
     this.lastPlayed = "";
@@ -182,16 +180,10 @@ export class Contract extends NearContract {
 
   // this method is only here for the promise callback,
   // it should never be called directly
-  @call
+  @call({ privateFunction: true })
   on_payout_complete(): void {
-    this.assertSelf();
     this.active = false;
     near.log("game over.");
-  }
-
-  @view
-  randomStr(): string {
-    return near.randomSeed();
   }
 
   // --------------------------------------------------------------------------
@@ -200,25 +192,14 @@ export class Contract extends NearContract {
 
   private fee(): bigint {
     return FeeStrategy.from(this.feeStrategy).calculate(
-      this.players.len(),
+      this.players.length,
       ONE_NEAR
     );
   }
 
-  private increasePot(): void {
-    this.pot = BigInt(this.pot) + BigInt(Number(near.attachedDeposit()));
-  }
-
   private generateFeeMessage(fee: bigint): string {
-    return `There are ${this.players.len()} players. Playing more than once now costs ${asNEAR(
-      fee
-    )} NEAR`;
-  }
-
-  private assertSelf(): void {
-    assert(
-      near.predecessorAccountId() === near.currentAccountId(),
-      "Only this contract may call this method"
-    );
+    return `There are ${
+      this.players.length
+    } players. Playing more than once now costs ${asNEAR(fee)} NEAR`;
   }
 }

@@ -1,4 +1,4 @@
-import { Worker, NearAccount } from "near-workspaces";
+import { Worker, NearAccount, Gas } from "near-workspaces";
 import anyTest, { TestFn } from "ava";
 
 const test = anyTest as TestFn<{
@@ -58,17 +58,28 @@ test("Contract#allows a player to play", async (t) => {
   const { root, contract } = t.context.accounts;
 
   try {
-    await root.call(contract, "play", {});
+    await root.call(
+      contract,
+      "play",
+      {},
+      { gas: Gas.parse("300 Tgas").toString() }
+    );
     t.pass();
   } catch {
     t.fail();
   }
 });
 
-test("Contract#provides access to most recent player", async (t) => {
+test.only("Contract#provides access to most recent player", async (t) => {
   const { root, contract } = t.context.accounts;
 
-  await root.call(contract, "play", {});
+  await contract.call(contract, "configure_lottery", { chance: 1e-9 });
+  await root.call(
+    contract,
+    "play",
+    {},
+    { gas: Gas.parse("300 Tgas").toString() }
+  );
 
   const lastToPlay = await contract.view("get_last_played");
 
@@ -78,7 +89,12 @@ test("Contract#provides access to most recent player", async (t) => {
 test("Contract#confirms whether a player has played", async (t) => {
   const { root, contract } = t.context.accounts;
 
-  await root.call(contract, "play", {});
+  await root.call(
+    contract,
+    "play",
+    {},
+    { gas: Gas.parse("300 Tgas").toString() }
+  );
 
   const hasPlayed = await contract.view("get_has_played", {
     player: root.accountId,
@@ -99,7 +115,12 @@ test("Contract#reports the winner of the lottery", async (t) => {
 test("Contract#adjusts the fee after 1 player", async (t) => {
   const { root, contract } = t.context.accounts;
 
-  await root.call(contract, "play", {});
+  await root.call(
+    contract,
+    "play",
+    {},
+    { gas: Gas.parse("300 Tgas").toString() }
+  );
 
   const fee = await contract.view("get_fee");
 
