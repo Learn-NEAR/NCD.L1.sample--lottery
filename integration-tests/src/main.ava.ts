@@ -1,6 +1,8 @@
 import { Worker, NearAccount, Gas } from "near-workspaces";
 import anyTest, { TestFn } from "ava";
 
+const gas = Gas.parse("200 Tgas").toString();
+
 const test = anyTest as TestFn<{
   worker: Worker;
   accounts: Record<string, NearAccount>;
@@ -14,8 +16,7 @@ test.beforeEach(async (t) => {
   const root = worker.rootAccount;
   const contract = await root.createSubAccount("test-account");
   // Get wasm file path from package.json test script in folder above
-  await contract.deploy(process.argv[2]);
-  // JavaScript contracts require calling 'init' function upon deployment
+  await contract.deploy("../contract/build/hello_near.wasm");
   await contract.call(contract, "init", { owner: contract.accountId });
 
   // Save state for test runs, it is unique for each test
@@ -57,6 +58,7 @@ test("Contract#provides a value for what a player may win", async (t) => {
 test("Contract#allows a player to play", async (t) => {
   const { root, contract } = t.context.accounts;
 
+  await contract.call(contract, "configure_lottery", { chance: 1e-9 });
   try {
     await root.call(
       contract,
@@ -70,7 +72,7 @@ test("Contract#allows a player to play", async (t) => {
   }
 });
 
-test.only("Contract#provides access to most recent player", async (t) => {
+test("Contract#provides access to most recent player", async (t) => {
   const { root, contract } = t.context.accounts;
 
   await contract.call(contract, "configure_lottery", { chance: 1e-9 });
@@ -161,4 +163,84 @@ test("Contract#allows ONLY the owner to reset the lottery", async (t) => {
   } catch {
     t.pass();
   }
+});
+
+test("FeeStrategy#is instantiated with exponential stretegy by default", async (t) => {
+  const { contract } = t.context.accounts;
+
+  const strategy = await contract.view("get_fee_strategy");
+
+  t.is(strategy, 3);
+});
+
+test("FeeStrategy#can explain itself", async (t) => {
+  const { contract } = t.context.accounts;
+
+  const explanation = await contract.view("explain_fees");
+
+  t.is(explanation, "one of [ Free | Constant | Linear | Exponential ]");
+});
+
+test("FeeStrategy#can be configured with a different strategy", async (t) => {
+  const { contract } = t.context.accounts;
+  const strategies = [0, 1, 2];
+
+  strategies.forEach(async (strategy) => {
+    try {
+      const result = await contract.call(contract, "configure_fee", {
+        strategy,
+      });
+      t.true(result);
+    } catch {
+      t.fail();
+    }
+  });
+});
+
+test("Lottery can explain itself", async (t) => {
+  const { contract } = t.context.accounts;
+  const lotteryExplanation = await contract.view("explain_lottery", {});
+  t.is(lotteryExplanation, "Players have a 20.0% chance of winning.");
+});
+
+test("Lottery#configure can be configured", async (t) => {
+  const chances = [1, 0.5, 0.25, 0.01];
+  const { contract } = t.context.accounts;
+
+  // chances.forEach(async (chance) => {
+  await contract.call(contract, "configure_lottery", { chance: chances[0] });
+  const lotteryExplanation = await contract.view("explain_lottery", {});
+  t.is(lotteryExplanation, `Players have a 100.0% chance of winning.`);
+  // });
+});
+
+test("Lottery#configure will throw if invalid value for chance", async (t) => {
+  const chances = [-1, 2];
+  const { contract } = t.context.accounts;
+
+  chances.forEach(async (chance) => {
+    try {
+      await contract.call(contract, "configure_lottery", { chance });
+      t.fail();
+    } catch {
+      t.pass();
+    }
+  });
+});
+
+// TODO: Currently cannot optimize gas enough to make this work
+test("Lottery#play wins if chance is 100%", async (t) => {
+  const { contract } = t.context.accounts;
+  await contract.call(contract, "configure_lottery", { chance: 1 });
+  await contract.call(contract, "play", {}, { gas });
+  const winner = await contract.view("get_winner", {});
+  t.is(winner, contract, "Should have won");
+});
+
+test("Lottery#play loses if chance is 1 in 1 billion", async (t) => {
+  const { contract } = t.context.accounts;
+  await contract.call(contract, "configure_lottery", { chance: 0.000000001 });
+  await contract.call(contract, "play", {}, { gas });
+  const winner = await contract.view("get_winner", {});
+  t.is(winner, "", "Should not have won");
 });

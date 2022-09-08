@@ -6,9 +6,9 @@
     "deploy": "cd contract && npm run deploy",
     "build": "npm run build:contract",
     "build:contract": "cd contract && npm run build",
-    "test": "npm run test:unit && npm run test:integration",
+    "test": "cd integration-tests && npm test  -- -- \"./contract/build/hello_near.wasm\"",
     "test:unit": "cd contract && npm test",
-    "test:integration": "npm run build:contract && cd integration-tests && npm test  -- -- \"./contract/build/hello_near.wasm\"",
+    "test:build": "npm run build:contract && npm test",
     "deps-install": "npm install && cd contract && npm install && cd ../integration-tests && npm install && cd .."
   },
   "devDependencies": {

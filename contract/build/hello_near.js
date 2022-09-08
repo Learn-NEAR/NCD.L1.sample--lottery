@@ -532,14 +532,44 @@ function input() {
   env.input(0);
   return env.read_register(0);
 }
-function promiseThen(promiseIndex, accountId, methodName, args, amount, gas) {
-  return env.promise_then(promiseIndex, accountId, methodName, args, amount, gas);
+function promiseAnd(...promiseIndex) {
+  return env.promise_and(...promiseIndex);
 }
 function promiseBatchCreate(accountId) {
   return env.promise_batch_create(accountId);
 }
+function promiseBatchThen(promiseIndex, accountId) {
+  return env.promise_batch_then(promiseIndex, accountId);
+}
+function promiseBatchActionCreateAccount(promiseIndex) {
+  env.promise_batch_action_create_account(promiseIndex);
+}
+function promiseBatchActionDeployContract(promiseIndex, code) {
+  env.promise_batch_action_deploy_contract(promiseIndex, code);
+}
+function promiseBatchActionFunctionCall(promiseIndex, methodName, args, amount, gas) {
+  env.promise_batch_action_function_call(promiseIndex, methodName, args, amount, gas);
+}
 function promiseBatchActionTransfer(promiseIndex, amount) {
   env.promise_batch_action_transfer(promiseIndex, amount);
+}
+function promiseBatchActionStake(promiseIndex, amount, publicKey) {
+  env.promise_batch_action_stake(promiseIndex, amount, publicKey);
+}
+function promiseBatchActionAddKeyWithFullAccess(promiseIndex, publicKey, nonce) {
+  env.promise_batch_action_add_key_with_full_access(promiseIndex, publicKey, nonce);
+}
+function promiseBatchActionAddKeyWithFunctionCall(promiseIndex, publicKey, nonce, allowance, receiverId, methodNames) {
+  env.promise_batch_action_add_key_with_function_call(promiseIndex, publicKey, nonce, allowance, receiverId, methodNames);
+}
+function promiseBatchActionDeleteKey(promiseIndex, publicKey) {
+  env.promise_batch_action_delete_key(promiseIndex, publicKey);
+}
+function promiseBatchActionDeleteAccount(promiseIndex, beneficiaryId) {
+  env.promise_batch_action_delete_account(promiseIndex, beneficiaryId);
+}
+function promiseBatchActionFunctionCallWeight(promiseIndex, methodName, args, amount, gas, weight) {
+  env.promise_batch_action_function_call_weight(promiseIndex, methodName, args, amount, gas, weight);
 }
 function promiseReturn(promiseIdx) {
   log('promiseReturn');
@@ -926,6 +956,287 @@ class UnorderedSet {
 
 }
 
+class PromiseAction {}
+class CreateAccount extends PromiseAction {
+  add(promise_index) {
+    promiseBatchActionCreateAccount(promise_index);
+  }
+
+}
+class DeployContract extends PromiseAction {
+  constructor(code) {
+    super();
+    this.code = code;
+  }
+
+  add(promise_index) {
+    promiseBatchActionDeployContract(promise_index, this.code);
+  }
+
+}
+class FunctionCall extends PromiseAction {
+  constructor(function_name, args, amount, gas) {
+    super();
+    this.function_name = function_name;
+    this.args = args;
+    this.amount = amount;
+    this.gas = gas;
+  }
+
+  add(promise_index) {
+    promiseBatchActionFunctionCall(promise_index, this.function_name, this.args, this.amount, this.gas);
+  }
+
+}
+class FunctionCallWeight extends PromiseAction {
+  constructor(function_name, args, amount, gas, weight) {
+    super();
+    this.function_name = function_name;
+    this.args = args;
+    this.amount = amount;
+    this.gas = gas;
+    this.weight = weight;
+  }
+
+  add(promise_index) {
+    promiseBatchActionFunctionCallWeight(promise_index, this.function_name, this.args, this.amount, this.gas, this.weight);
+  }
+
+}
+class Transfer extends PromiseAction {
+  constructor(amount) {
+    super();
+    this.amount = amount;
+  }
+
+  add(promise_index) {
+    promiseBatchActionTransfer(promise_index, this.amount);
+  }
+
+}
+class Stake extends PromiseAction {
+  constructor(amount, public_key) {
+    super();
+    this.amount = amount;
+    this.public_key = public_key;
+  }
+
+  add(promise_index) {
+    promiseBatchActionStake(promise_index, this.amount, this.public_key.data);
+  }
+
+}
+class AddFullAccessKey extends PromiseAction {
+  constructor(public_key, nonce) {
+    super();
+    this.public_key = public_key;
+    this.nonce = nonce;
+  }
+
+  add(promise_index) {
+    promiseBatchActionAddKeyWithFullAccess(promise_index, this.public_key.data, this.nonce);
+  }
+
+}
+class AddAccessKey extends PromiseAction {
+  constructor(public_key, allowance, receiver_id, function_names, nonce) {
+    super();
+    this.public_key = public_key;
+    this.allowance = allowance;
+    this.receiver_id = receiver_id;
+    this.function_names = function_names;
+    this.nonce = nonce;
+  }
+
+  add(promise_index) {
+    promiseBatchActionAddKeyWithFunctionCall(promise_index, this.public_key.data, this.nonce, this.allowance, this.receiver_id, this.function_names);
+  }
+
+}
+class DeleteKey extends PromiseAction {
+  constructor(public_key) {
+    super();
+    this.public_key = public_key;
+  }
+
+  add(promise_index) {
+    promiseBatchActionDeleteKey(promise_index, this.public_key.data);
+  }
+
+}
+class DeleteAccount extends PromiseAction {
+  constructor(beneficiary_id) {
+    super();
+    this.beneficiary_id = beneficiary_id;
+  }
+
+  add(promise_index) {
+    promiseBatchActionDeleteAccount(promise_index, this.beneficiary_id);
+  }
+
+}
+
+class PromiseSingle {
+  constructor(account_id, actions, after, promise_index) {
+    this.account_id = account_id;
+    this.actions = actions;
+    this.after = after;
+    this.promise_index = promise_index;
+  }
+
+  constructRecursively() {
+    if (this.promise_index !== null) {
+      return this.promise_index;
+    }
+
+    let promise_index;
+
+    if (this.after) {
+      promise_index = promiseBatchThen(this.after.constructRecursively(), this.account_id);
+    } else {
+      promise_index = promiseBatchCreate(this.account_id);
+    }
+
+    for (let action of this.actions) {
+      action.add(promise_index);
+    }
+
+    this.promise_index = promise_index;
+    return promise_index;
+  }
+
+}
+
+class PromiseJoint {
+  constructor(promise_a, promise_b, promise_index) {
+    this.promise_a = promise_a;
+    this.promise_b = promise_b;
+    this.promise_index = promise_index;
+  }
+
+  constructRecursively() {
+    if (this.promise_index !== null) {
+      return this.promise_index;
+    }
+
+    let res = promiseAnd(BigInt(this.promise_a.constructRecursively()), BigInt(this.promise_b.constructRecursively()));
+    this.promise_index = res;
+    return res;
+  }
+
+}
+class NearPromise {
+  constructor(subtype, should_return) {
+    this.subtype = subtype;
+    this.should_return = should_return;
+  }
+
+  static new(account_id) {
+    let subtype = new PromiseSingle(account_id, [], null, null);
+    let ret = new NearPromise(subtype, false);
+    return ret;
+  }
+
+  add_action(action) {
+    if (this.subtype instanceof PromiseJoint) {
+      throw new Error("Cannot add action to a joint promise.");
+    } else {
+      this.subtype.actions.push(action);
+    }
+
+    return this;
+  }
+
+  createAccount() {
+    return this.add_action(new CreateAccount());
+  }
+
+  deployContract(code) {
+    return this.add_action(new DeployContract(code));
+  }
+
+  functionCall(function_name, args, amount, gas) {
+    return this.add_action(new FunctionCall(function_name, args, amount, gas));
+  }
+
+  functionCallWeight(function_name, args, amount, gas, weight) {
+    return this.add_action(new FunctionCallWeight(function_name, args, amount, gas, weight));
+  }
+
+  transfer(amount) {
+    return this.add_action(new Transfer(amount));
+  }
+
+  stake(amount, public_key) {
+    return this.add_action(new Stake(amount, public_key));
+  }
+
+  addFullAccessKey(public_key) {
+    return this.addFullAccessKeyWithNonce(public_key, 0n);
+  }
+
+  addFullAccessKeyWithNonce(public_key, nonce) {
+    return this.add_action(new AddFullAccessKey(public_key, nonce));
+  }
+
+  addAccessKey(public_key, allowance, receiver_id, method_names) {
+    return this.addAccessKeyWithNonce(public_key, allowance, receiver_id, method_names, 0n);
+  }
+
+  addAccessKeyWithNonce(public_key, allowance, receiver_id, method_names, nonce) {
+    return this.add_action(new AddAccessKey(public_key, allowance, receiver_id, method_names, nonce));
+  }
+
+  deleteKey(public_key) {
+    return this.add_action(new DeleteKey(public_key));
+  }
+
+  deleteAccount(beneficiary_id) {
+    return this.add_action(new DeleteAccount(beneficiary_id));
+  }
+
+  and(other) {
+    let subtype = new PromiseJoint(this, other, null);
+    let ret = new NearPromise(subtype, false);
+    return ret;
+  }
+
+  then(other) {
+    if (other.subtype instanceof PromiseSingle) {
+      if (other.subtype.after !== null) {
+        throw new Error("Cannot callback promise which is already scheduled after another");
+      }
+
+      other.subtype.after = this;
+    } else {
+      throw new Error("Cannot callback joint promise.");
+    }
+
+    return other;
+  }
+
+  asReturn() {
+    this.should_return = true;
+    return this;
+  }
+
+  constructRecursively() {
+    let res = this.subtype.constructRecursively();
+
+    if (this.should_return) {
+      promiseReturn(res);
+    }
+
+    return res;
+  } // Called by NearBindgen, when return object is a NearPromise instance.
+
+
+  onReturn() {
+    this.asReturn().constructRecursively();
+  }
+
+}
+
 let StrategyType;
 
 (function (StrategyType) {
@@ -1061,9 +1372,7 @@ BigInt.prototype["toJSON"] = function () {
 
 let Contract = (_dec = NearBindgen({
   requireInit: true
-}), _dec2 = initialize({}), _dec3 = view({}), _dec4 = view({}), _dec5 = view({}), _dec6 = view({}), _dec7 = view({}), _dec8 = view({}), _dec9 = view({}), _dec10 = view({}), _dec11 = view({}), _dec12 = view({}), _dec13 = call({
-  payableFunction: true
-}), _dec14 = call({
+}), _dec2 = initialize({}), _dec3 = view({}), _dec4 = view({}), _dec5 = view({}), _dec6 = view({}), _dec7 = view({}), _dec8 = view({}), _dec9 = view({}), _dec10 = view({}), _dec11 = view({}), _dec12 = view({}), _dec13 = call({}), _dec14 = call({
   privateFunction: true
 }), _dec15 = call({
   privateFunction: true
@@ -1072,13 +1381,14 @@ let Contract = (_dec = NearBindgen({
 }), _dec17 = call({
   privateFunction: true
 }), _dec(_class = (_class2 = class Contract {
+  owner = "";
+  winner = "";
+  lastPlayed = "";
   active = true;
   pot = ONE_NEAR;
   lottery = new Lottery();
   feeStrategy = new FeeStrategy();
-  players = new UnorderedSet("players");
-
-  constructor() {}
+  players = new UnorderedSet("p");
 
   init({
     owner
@@ -1113,7 +1423,6 @@ let Contract = (_dec = NearBindgen({
   }
 
   get_last_played() {
-    log(`lastPlayed:${this.lastPlayed},active:${this.active},owner:${this.owner}`);
     return this.lastPlayed;
   }
 
@@ -1144,30 +1453,26 @@ let Contract = (_dec = NearBindgen({
   play() {
     assert(this.active, `${this.winner} won ${this.pot}. Please reset the game.`);
     const signer = signerAccountId();
-    const deposit = attachedDeposit(); // if you've played before then you have to pay extra
+    const deposit = attachedDeposit();
+    const played = this.players.contains(signer); // if you've played before then you have to pay extra
 
-    if (this.players.contains(signer)) {
+    if (played) {
       const fee = this.fee();
       assert(deposit >= fee, this.generateFeeMessage(fee));
-      this.pot = BigInt(this.pot) + deposit; // if it's your first time then you may win for the price of gas
+      this.pot = BigInt(this.pot) + deposit;
     } else {
+      // if it's your first time then you may win for the price of gas
       this.players.set(signer);
     }
 
     this.lastPlayed = signer;
-    log(`Updated lastPlayed to ${this.lastPlayed}`);
 
-    if (Lottery.from(this.lottery).play()) {
+    if (this.playLottery()) {
       this.winner = signer;
       log(`${this.winner} won ${this.get_pot()}!`);
 
       if (this.winner.length > 0) {
-        const promise = promiseBatchCreate(this.winner); // transfer payout to winner
-
-        promiseBatchActionTransfer(promise, this.pot); // receive confirmation of payout before setting game to inactive
-
-        const then = promiseThen(promise, currentAccountId(), "on_payout_complete", bytes(JSON.stringify({})), 0, XCC_GAS);
-        promiseReturn(then);
+        this.payout();
       }
     } else {
       log(`${this.lastPlayed} did not win.  The pot is currently ${this.get_pot()}`);
@@ -1214,6 +1519,16 @@ let Contract = (_dec = NearBindgen({
 
   generateFeeMessage(fee) {
     return `There are ${this.players.length} players. Playing more than once now costs ${asNEAR(fee)} NEAR`;
+  }
+
+  playLottery() {
+    return Lottery.from(this.lottery).play();
+  }
+
+  payout() {
+    NearPromise.new(this.winner).transfer(this.pot) // transfer payout to winner
+    .then( // receive confirmation of payout before setting game to inactive
+    NearPromise.new(currentAccountId()).functionCall("on_payout_complete", bytes(JSON.stringify({})), 0n, XCC_GAS)).onReturn();
   }
 
 }, (_applyDecoratedDescriptor(_class2.prototype, "init", [_dec2], Object.getOwnPropertyDescriptor(_class2.prototype, "init"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "get_owner", [_dec3], Object.getOwnPropertyDescriptor(_class2.prototype, "get_owner"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "get_winner", [_dec4], Object.getOwnPropertyDescriptor(_class2.prototype, "get_winner"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "get_pot", [_dec5], Object.getOwnPropertyDescriptor(_class2.prototype, "get_pot"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "get_fee", [_dec6], Object.getOwnPropertyDescriptor(_class2.prototype, "get_fee"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "get_fee_strategy", [_dec7], Object.getOwnPropertyDescriptor(_class2.prototype, "get_fee_strategy"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "get_has_played", [_dec8], Object.getOwnPropertyDescriptor(_class2.prototype, "get_has_played"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "get_last_played", [_dec9], Object.getOwnPropertyDescriptor(_class2.prototype, "get_last_played"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "get_active", [_dec10], Object.getOwnPropertyDescriptor(_class2.prototype, "get_active"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "explain_fees", [_dec11], Object.getOwnPropertyDescriptor(_class2.prototype, "explain_fees"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "explain_lottery", [_dec12], Object.getOwnPropertyDescriptor(_class2.prototype, "explain_lottery"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "play", [_dec13], Object.getOwnPropertyDescriptor(_class2.prototype, "play"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "configure_lottery", [_dec14], Object.getOwnPropertyDescriptor(_class2.prototype, "configure_lottery"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "configure_fee", [_dec15], Object.getOwnPropertyDescriptor(_class2.prototype, "configure_fee"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "reset", [_dec16], Object.getOwnPropertyDescriptor(_class2.prototype, "reset"), _class2.prototype), _applyDecoratedDescriptor(_class2.prototype, "on_payout_complete", [_dec17], Object.getOwnPropertyDescriptor(_class2.prototype, "on_payout_complete"), _class2.prototype)), _class2)) || _class);

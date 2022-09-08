@@ -7,6 +7,7 @@ import {
   bytes,
   assert,
   initialize,
+  NearPromise,
 } from "near-sdk-js";
 import { FeeStrategy, StrategyType } from "./fee-strategies";
 import { Lottery } from "./lottery";
@@ -19,16 +20,14 @@ BigInt.prototype["toJSON"] = function () {
 // The @NearBindgen decorator allows this code to compile to Base64.
 @NearBindgen({ requireInit: true })
 export class Contract {
-  private owner: string;
-  private winner: string;
-  private lastPlayed: string;
+  private owner: string = "";
+  private winner: string = "";
+  private lastPlayed: string = "";
   private active: boolean = true;
   private pot: bigint = ONE_NEAR;
   private lottery: Lottery = new Lottery();
   private feeStrategy: FeeStrategy = new FeeStrategy();
-  private players: UnorderedSet = new UnorderedSet("players");
-
-  constructor() {}
+  private players: UnorderedSet = new UnorderedSet("p");
 
   @initialize({})
   init({ owner }: { owner: string }) {
@@ -67,9 +66,6 @@ export class Contract {
 
   @view({})
   get_last_played(): string {
-    near.log(
-      `lastPlayed:${this.lastPlayed},active:${this.active},owner:${this.owner}`
-    );
     return this.lastPlayed;
   }
 
@@ -100,7 +96,7 @@ export class Contract {
    * If you've already played once then any other play costs you a fee.
    * This fee is calculated as 1 NEAR X the square of the total number of unique players
    */
-  @call({ payableFunction: true })
+  @call({})
   play(): void {
     assert(
       this.active,
@@ -108,42 +104,26 @@ export class Contract {
     );
     const signer = near.signerAccountId();
     const deposit = near.attachedDeposit();
+    const played = this.players.contains(signer);
 
     // if you've played before then you have to pay extra
-    if (this.players.contains(signer)) {
+    if (played) {
       const fee = this.fee();
       assert(deposit >= fee, this.generateFeeMessage(fee));
       this.pot = BigInt(this.pot) + deposit;
-
-      // if it's your first time then you may win for the price of gas
     } else {
+      // if it's your first time then you may win for the price of gas
       this.players.set(signer);
     }
 
     this.lastPlayed = signer;
-    near.log(`Updated lastPlayed to ${this.lastPlayed}`);
 
-    if (Lottery.from(this.lottery).play()) {
+    if (this.playLottery()) {
       this.winner = signer;
       near.log(`${this.winner} won ${this.get_pot()}!`);
 
       if (this.winner.length > 0) {
-        const promise = near.promiseBatchCreate(this.winner);
-
-        // transfer payout to winner
-        near.promiseBatchActionTransfer(promise, this.pot);
-
-        // receive confirmation of payout before setting game to inactive
-        const then = near.promiseThen(
-          promise,
-          near.currentAccountId(),
-          "on_payout_complete",
-          bytes(JSON.stringify({})),
-          0,
-          XCC_GAS
-        );
-
-        near.promiseReturn(then);
+        this.payout();
       }
     } else {
       near.log(
@@ -201,5 +181,24 @@ export class Contract {
     return `There are ${
       this.players.length
     } players. Playing more than once now costs ${asNEAR(fee)} NEAR`;
+  }
+
+  private playLottery(): boolean {
+    return Lottery.from(this.lottery).play();
+  }
+
+  private payout(): void {
+    NearPromise.new(this.winner)
+      .transfer(this.pot) // transfer payout to winner
+      .then(
+        // receive confirmation of payout before setting game to inactive
+        NearPromise.new(near.currentAccountId()).functionCall(
+          "on_payout_complete",
+          bytes(JSON.stringify({})),
+          0n,
+          XCC_GAS
+        )
+      )
+      .onReturn();
   }
 }
