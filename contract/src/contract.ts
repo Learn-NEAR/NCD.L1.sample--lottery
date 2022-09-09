@@ -187,8 +187,8 @@ export class Contract {
     return Lottery.from(this.lottery).play();
   }
 
-  private payout(): void {
-    NearPromise.new(this.winner)
+  private payout(): NearPromise {
+    return NearPromise.new(this.winner)
       .transfer(this.pot) // transfer payout to winner
       .then(
         // receive confirmation of payout before setting game to inactive
@@ -198,7 +198,6 @@ export class Contract {
           0n,
           XCC_GAS
         )
-      )
-      .onReturn();
+      );
   }
 }

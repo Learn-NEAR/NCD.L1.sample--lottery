@@ -234,7 +234,7 @@ test("Lottery#play wins if chance is 100%", async (t) => {
   await contract.call(contract, "configure_lottery", { chance: 1 });
   await contract.call(contract, "play", {}, { gas });
   const winner = await contract.view("get_winner", {});
-  t.is(winner, contract, "Should have won");
+  t.is(winner, contract.accountId, "Should have won");
 });
 
 test("Lottery#play loses if chance is 1 in 1 billion", async (t) => {
